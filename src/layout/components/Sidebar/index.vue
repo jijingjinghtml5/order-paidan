@@ -11,13 +11,17 @@
         :active-text-color="variables.menuActiveText"
         :collapse-transition="false"
         mode="vertical"
+        @select="select"
       >
-        <sidebar-item
+        <!-- <sidebar-item
           v-for="route in permission_routes"
           :key="route.path"
           :item="route"
           :base-path="route.path"
-        />
+        /> -->
+        <template v-for="route in menus">
+          <sidebar-item v-if="!route.hidden" :key="route.id" :item="route" :base-path="route.id" />
+        </template>
       </el-menu>
     </el-scrollbar>
   </div>
@@ -32,7 +36,7 @@ import SidebarItem from './SidebarItem'
 export default {
   components: { SidebarItem, Logo },
   computed: {
-    ...mapGetters(['permission_routes', 'sidebar']),
+    ...mapGetters(['menus', 'sidebar']),
     activeMenu() {
       const route = this.$route
       const { meta, path } = route
@@ -50,6 +54,20 @@ export default {
     },
     isCollapse() {
       return !this.sidebar.opened
+    }
+  },
+  methods: {
+    // 点击菜单
+    select(name) {
+      if (!Number.isNaN(Number(name))) {
+        this.$router.push({
+          path: `/list/${name}`
+        })
+      } else {
+        this.$router.push({
+          path: name
+        })
+      }
     }
   }
 }

@@ -1,52 +1,50 @@
 <template>
-  <div v-if="!item.hidden">
-    <template
-      v-if="
-        hasOneShowingChild(item.children, item) &&
-        (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
-        !item.alwaysShow
-      "
-    >
-      <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
-        <el-menu-item
-          :index="resolvePath(onlyOneChild.path)"
-          :class="{ 'submenu-title-noDropdown': !isNest }"
-        >
-          <item
-            :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)"
-            :title="onlyOneChild.meta.title"
-          />
-        </el-menu-item>
-      </app-link>
-    </template>
+  <el-menu-item
+    v-if="
+      hasOneShowingChild(item.children, item) &&
+      (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
+      !item.alwaysShow
+    "
+    :index="item.category == 1 ? item.id : item.url"
+    :class="{ 'submenu-title-noDropdown': !isNest }"
+  >
+    <item
+      :icon="onlyOneChild.icon || item.icon"
+      :title="onlyOneChild.name"
+      :value="onlyOneChild.calcu == 1 ? onlyOneChild.count : 0"
+      :path="basePath"
+    />
+  </el-menu-item>
 
-    <el-submenu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
-      <template slot="title">
-        <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="item.meta.title" />
-      </template>
+  <el-submenu v-else ref="subMenu" :index="item.id" popper-append-to-body>
+    <template slot="title">
+      <item
+        v-if="item"
+        :icon="item.icon"
+        :value="item.calcu == 1 ? item.count : 0"
+        :title="item.name"
+      />
+    </template>
+    <template v-for="child in item.children">
       <sidebar-item
-        v-for="child in item.children"
-        :key="child.path"
+        v-if="!child.hidden"
+        :key="child.id"
         :is-nest="true"
         :item="child"
-        :base-path="resolvePath(child.path)"
+        :base-path="resolvePath(child)"
         class="nest-menu"
       />
-    </el-submenu>
-  </div>
+    </template>
+  </el-submenu>
 </template>
 
 <script>
-import path from 'path'
-import { isExternal } from '@/utils/validate'
+// import path from 'path'
 import Item from './Item'
-import AppLink from './Link'
-import FixiOSBug from './FixiOSBug'
 
 export default {
   name: 'SidebarItem',
-  components: { Item, AppLink },
-  mixins: [FixiOSBug],
+  components: { Item },
   props: {
     // route object
     item: {
@@ -73,10 +71,11 @@ export default {
       const showingChildren = children.filter((item) => {
         if (item.hidden) {
           return false
+        } else {
+          // Temp set(will be used if only has one showing child)
+          this.onlyOneChild = item
+          return true
         }
-        // Temp set(will be used if only has one showing child)
-        this.onlyOneChild = item
-        return true
       })
 
       // When there is only one child router, the child router is displayed by default
@@ -92,14 +91,11 @@ export default {
 
       return false
     },
-    resolvePath(routePath) {
-      if (isExternal(routePath)) {
-        return routePath
+    resolvePath(item) {
+      if (item.category == 2) {
+        return item.url
       }
-      if (isExternal(this.basePath)) {
-        return this.basePath
-      }
-      return path.resolve(this.basePath, routePath)
+      return `/list/${item.id}`
     }
   }
 }

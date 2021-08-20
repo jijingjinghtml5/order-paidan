@@ -1,4 +1,4 @@
-import { login, logout, loginByToken } from '@/api/login'
+import { login, logout, loginByToken, getCaseCount } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
@@ -8,7 +8,17 @@ const getDefaultState = () => {
     name: '',
     avatar: '',
     roles: [],
-    rights: []
+    rights: [],
+    menus: []
+  }
+}
+
+const fun = async (commit, stopFn) => {
+  const res = await getCaseCount()
+  if (res.code == 200) {
+    commit('SET_MENUS', res.response)
+  } else {
+    stopFn && stopFn()
   }
 }
 
@@ -23,6 +33,9 @@ const mutations = {
   },
   SET_NAME: (state, name) => {
     state.name = name
+  },
+  SET_MENUS(state, payload) {
+    state.menus = payload
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
@@ -98,6 +111,16 @@ const actions = {
       commit('RESET_STATE')
       resolve()
     })
+  },
+
+  getProcessCount({ commit, state }) {
+    clearInterval(state.timer)
+    fun(commit)
+    state.timer = setInterval(() => {
+      fun(commit, () => {
+        clearInterval(state.timer)
+      })
+    }, 2 * 60 * 1000)
   }
 }
 

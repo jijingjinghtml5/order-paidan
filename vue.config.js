@@ -12,7 +12,7 @@ module.exports = {
   publicPath: './',
   outputDir: 'dist',
   assetsDir: 'static',
-  lintOnSave: process.env.NODE_ENV === 'development',
+  // lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   css: {
     loaderOptions: {
@@ -35,7 +35,7 @@ module.exports = {
     proxy: {
       // 配置跨域
       '/api_v3': {
-        target: 'http://172.16.25.57:8083',
+        target: 'http://172.16.25.57',
         changeOrigin: true
       }
     }

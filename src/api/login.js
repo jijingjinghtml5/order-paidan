@@ -30,3 +30,10 @@ export function loginBySSOToken(data) {
     data
   })
 }
+
+export function getCaseCount() {
+  return request({
+    url: '/api_v3/app/event/count',
+    method: 'get'
+  })
+}
