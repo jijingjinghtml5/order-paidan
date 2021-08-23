@@ -7,9 +7,10 @@ import Router from 'vue-router'
 // import nested from '@/layout/nested' // 为了嵌套路由
 
 /* Router Modules */
-import dictionaryRouter from './modules/dictionary'
-import templateRouter from './modules/template'
-import viewRouter from './modules/view'
+// import dictionaryRouter from './modules/dictionary'
+// import templateRouter from './modules/template'
+// import viewRouter from './modules/view'
+import caseRouter from './modules/case'
 
 Vue.use(Router)
 
@@ -33,11 +34,11 @@ Vue.use(Router)
  */
 
 export const constantRoutes = [
-  {
-    path: '/',
-    redirect: '/dictionary',
-    hidden: true
-  },
+  // {
+  //   path: '/',
+  //   // redirect: '/dictionary',
+  //   hidden: true
+  // },
   {
     path: '/login',
     name: 'Login',
@@ -53,9 +54,10 @@ export const constantRoutes = [
 ]
 
 export const asyncRoutes = [
-  dictionaryRouter,
-  templateRouter,
-  viewRouter,
+  //   dictionaryRouter,
+  //   templateRouter,
+  //   viewRouter,
+  caseRouter,
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

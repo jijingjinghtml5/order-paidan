@@ -16,6 +16,7 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
+    'no-param-reassign': 'off',
     'no-else-return': 'off',
     'no-unused-expressions': 'off',
     'no-continue': 'off',
@@ -29,13 +30,13 @@ module.exports = {
     'import/no-absolute-path': 'off',
     'import/no-extraneous-dependencies': 'off',
     'vue/no-multiple-template-root': 'off',
-    'no-param-reassign': [
-      'error',
-      {
-        props: true,
-        ignorePropertyModificationsFor: ['state', 'config']
-      }
-    ],
+    // 'no-param-reassign': [
+    //   'error',
+    //   {
+    //     props: true,
+    //     ignorePropertyModificationsFor: ['state', 'config']
+    //   }
+    // ],
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off'
   }
