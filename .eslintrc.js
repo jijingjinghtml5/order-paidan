@@ -16,6 +16,10 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
+    'prefer-template': 'off',
+    radix: 'off',
+    'no-nested-ternary': 'off',
+    'no-underscore-dangle': 'off',
     'no-param-reassign': 'off',
     'no-else-return': 'off',
     'no-unused-expressions': 'off',

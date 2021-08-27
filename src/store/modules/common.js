@@ -13,7 +13,7 @@ const getDefaultState = () => {
     eventType: [],
     eventTypeNew: [],
     eventSource: [],
-    codeDict: [],
+    codeDict: null,
     reportTypes: [],
     discoverTypes: [],
     caseStatus: [],
@@ -86,7 +86,7 @@ const actions = {
     }
     if (!state.codeDict) {
       getCodeDict().then((res) => {
-        commit('SET_CODEDICT', res.response.data)
+        commit('SET_CODEDICT', res.response)
       })
     }
     if (!state.reportTypes.length) {

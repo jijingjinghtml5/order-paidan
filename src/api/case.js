@@ -67,3 +67,15 @@ export function editManageElementItem(data) {
     data
   })
 }
+
+/**
+ * 案件列表
+ * @param {number} menuId 列表id
+ */
+export function getEvents(params) {
+  return request({
+    url: `/api_v3/app/events`,
+    method: 'get',
+    params
+  })
+}

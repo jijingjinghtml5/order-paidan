@@ -18,7 +18,7 @@
             :disabled="notInput"
             class="input-username"
             @input="userNameChange"
-            @keyup.enter.native="login"
+            @keyup.enter.native="loginIn"
           />
         </el-form-item>
         <el-form-item label="密码" prop="password">
@@ -27,7 +27,7 @@
             style="width: 400px"
             type="password"
             :disabled="notInput"
-            @keyup.enter.native="login"
+            @keyup.enter.native="loginIn"
           />
         </el-form-item>
         <el-form-item>

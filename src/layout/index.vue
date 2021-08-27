@@ -79,7 +79,7 @@ export default {
     background: $bgcolor;
   }
   .fixedHeaderMainContainer {
-    padding-top: 70px;
+    padding-top: 55px;
   }
 }
 

@@ -30,7 +30,7 @@ export function getDiscoverTypes(params) {
 }
 export function getCodeDict(params) {
   return request({
-    url: '/api_v3/manage/meta-data/code-dict',
+    url: '/api_v3/app/meta-data/code-dict',
     method: 'get',
     params
   })

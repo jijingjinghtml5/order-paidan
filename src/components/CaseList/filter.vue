@@ -38,7 +38,7 @@
       <el-col class="colBox">
         <span class="filter-item-span">上报方式</span>
         <el-select
-          v-model="formparams.report_type"
+          v-model="formparams.submitType"
           class="input-width"
           clearable
           filterable
@@ -109,7 +109,7 @@ export default {
         fuzzySearchType: 'number', // 模糊搜索类型
         fuzzySearchValue: '', // 模糊搜索值
         caseType: [],
-        report_type: ''
+        submitType: ''
       },
       fuzzySearchMap: {
         number: '案件编号',
@@ -129,11 +129,31 @@ export default {
         fuzzySearchType: 'number', // 模糊搜索类型
         fuzzySearchValue: '', // 模糊搜索值
         caseType: [],
-        report_type: ''
+        submitType: ''
       }
+      this.search()
     },
-    search() {},
-    caseTypeChange() {},
+    search() {
+      const params = this.handleParams(this.formparams)
+      this.$emit('search-submit', params)
+    },
+    handleParams() {
+      const formParams = JSON.parse(JSON.stringify(this.formparams))
+      const newParams = {
+        code: formParams.fuzzySearchType === 'number' ? formParams.fuzzySearchValue : '',
+        order_name: formParams.fuzzySearchType === 'name' ? formParams.fuzzySearchValue : '',
+        address: formParams.fuzzySearchType === 'address' ? formParams.fuzzySearchValue : '',
+        eventTypes: formParams.caseType.join(','),
+        ...formParams
+      }
+      delete newParams.caseType
+      delete newParams.fuzzySearchType
+      delete newParams.fuzzySearchValue
+      return newParams
+    },
+    caseTypeChange() {
+      this.search()
+    },
     selectOriginClickAll() {
       this.formparams.source = this.eventSource.map((item) => item.id)
       this.search()
