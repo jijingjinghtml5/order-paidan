@@ -28,6 +28,14 @@ const caseRouter = {
       path: '/list/:id',
       name: 'list',
       component: () => import('@/views/list/index')
+    },
+    {
+      path: '/case-detail-new/:id',
+      name: 'case-detail-new',
+      component: () => import('@/views/detail-info/detail-new.vue'),
+      meta: {
+        title: '案件详情'
+      }
     }
   ]
 }

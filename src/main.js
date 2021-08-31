@@ -14,6 +14,7 @@ import router from './router'
 import '@/icons' // icon
 import '@/permission' // permission control
 import './directive/dialogDrag'
+import '@/assets/icon/style.css'
 
 // eslint-disable-next-line
 Date.prototype.Format = function (fmt) {

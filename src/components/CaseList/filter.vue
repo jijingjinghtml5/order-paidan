@@ -1,6 +1,7 @@
 <template>
   <div class="filter-wrap">
     <el-row>
+      <!-- 关键词筛选 -->
       <el-col class="colBox">
         <el-input
           v-model.trim="formparams.fuzzySearchValue"
@@ -21,6 +22,7 @@
           <el-button slot="append" icon="el-icon-search" @click="search" />
         </el-input>
       </el-col>
+      <!-- 案件分类 -->
       <el-col class="colBox">
         <span class="filter-item-span">案件分类</span>
         <el-cascader
@@ -35,6 +37,7 @@
           @change="caseTypeChange"
         />
       </el-col>
+      <!-- 上报方式 -->
       <el-col class="colBox">
         <span class="filter-item-span">上报方式</span>
         <el-select
@@ -54,6 +57,7 @@
           />
         </el-select>
       </el-col>
+      <!-- 案件来源 -->
       <el-col class="colBox">
         <span class="filter-item-span">案件来源</span>
         <el-select
@@ -92,10 +96,12 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import filterMixin from '@/mixins/filter'
 
 export default {
   name: 'CommonFilter',
   components: {},
+  mixins: [filterMixin],
   props: {
     slotAfter: {
       type: Boolean,
@@ -124,6 +130,7 @@ export default {
   watch: {},
   mounted() {},
   methods: {
+    // 重置
     clearSearch() {
       this.formparams = {
         fuzzySearchType: 'number', // 模糊搜索类型
@@ -133,10 +140,12 @@ export default {
       }
       this.search()
     },
+    // 搜索
     search() {
       const params = this.handleParams(this.formparams)
       this.$emit('search-submit', params)
     },
+    // 处理搜索条件数据
     handleParams() {
       const formParams = JSON.parse(JSON.stringify(this.formparams))
       const newParams = {
@@ -151,71 +160,20 @@ export default {
       delete newParams.fuzzySearchValue
       return newParams
     },
+    // 分类变化
     caseTypeChange() {
       this.search()
     },
+    // 全选
     selectOriginClickAll() {
       this.formparams.source = this.eventSource.map((item) => item.id)
       this.search()
     },
+    // 反选
     selectOriginClickInvert() {
       const source = this.eventSource.filter((item) => this.formparams.source.indexOf(item.id) < 0)
       this.formparams.source = source.map((item) => item.id)
       this.search()
-    },
-    /**
-     * 为element-ui的Select和Cascader添加弹层底部操作按钮
-     * @param visible
-     * @param refName  设定的ref名称
-     * @param onClick  底部操作按钮点击监听
-     */
-    visibleChange(visible, refName, onClickAll, onclickInvert) {
-      if (visible) {
-        const ref = this.$refs[refName]
-        let popper = ref.$refs.popper
-        if (popper.$el) popper = popper.$el
-        if (!Array.from(popper.children).some((v) => v.className === 'el-select-dropdown__list')) {
-          const el = document.createElement('ul')
-          el.className = 'el-select-dropdown__list'
-          el.style =
-            'border-top: solid 1px #E4E7ED; padding:0; color: #606266;text-align:right;height:38px;line-height: 38px;'
-          const btn1 = document.createElement('button')
-          btn1.className = 'el-button el-button--primary el-button--mini'
-          btn1.innerHTML = '全选'
-
-          const btn2 = document.createElement('button')
-          btn2.className = 'el-button el-button--primary el-button--mini'
-          btn2.innerHTML = '反选'
-
-          el.appendChild(btn1)
-          el.appendChild(btn2)
-
-          // el.innerHTML = `${btn1}${btn2}`
-          popper.appendChild(el)
-          btn1.onclick = () => {
-            // 底部按钮的点击事件 点击后想触发的逻辑也可以直接写在这
-            onClickAll && onClickAll()
-
-            // 以下代码实现点击后弹层隐藏 不需要可以删掉
-            // if (ref.toggleDropDownVisible) {
-            //   ref.toggleDropDownVisible(false);
-            // } else {
-            //   ref.visible = false;
-            // }
-          }
-          btn2.onclick = () => {
-            // 底部按钮的点击事件 点击后想触发的逻辑也可以直接写在这
-            onclickInvert && onclickInvert()
-
-            // 以下代码实现点击后弹层隐藏 不需要可以删掉
-            // if (ref.toggleDropDownVisible) {
-            //   ref.toggleDropDownVisible(false);
-            // } else {
-            //   ref.visible = false;
-            // }
-          }
-        }
-      }
     }
   }
 }

@@ -139,6 +139,7 @@ export default {
       currentActionId: '',
       title: '',
       uid: Storage.get('userId'),
+      HTML_BASE: process.env.VUE_APP_HTML_URL,
       formMenus: '' // 表单请求的返回
     }
   },
@@ -155,8 +156,15 @@ export default {
     }
   },
   methods: {
-    openWindow() {
-      //
+    openWindow(router) {
+      let url = ''
+      if (process.env.NODE_ENV == 'production' && this.HTML_BASE) {
+        url = document.location.origin + '/web/#' + router
+      } else {
+        url = document.location.origin + '/#' + router
+      }
+      // window.open(url)
+      window.location.href = url
     },
     actionConfirm() {
       this.formMenus = this.$refs.paperIndex.menus

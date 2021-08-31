@@ -28,6 +28,7 @@ export function getDiscoverTypes(params) {
     params
   })
 }
+
 export function getCodeDict(params) {
   return request({
     url: '/api_v3/app/meta-data/code-dict',

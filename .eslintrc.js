@@ -16,6 +16,9 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
+    'default-case': 'off',
+    'no-plusplus': 'off',
+    'array-callback-return': 'off',
     'prefer-template': 'off',
     radix: 'off',
     'no-nested-ternary': 'off',

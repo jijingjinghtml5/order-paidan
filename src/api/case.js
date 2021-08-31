@@ -122,3 +122,29 @@ export function handleCaseDispatch(data) {
     data
   })
 }
+
+export function getEventDetail(eventId, params) {
+  return request({
+    url: `/api_v3/app/events/${eventId}`,
+    method: 'get',
+    params
+  })
+}
+
+// 获取案件名称
+export function getEventTypeDict(params) {
+  return request({
+    url: `${process.env.VUE_APP_LIST_URL}/meta-data/event-type-dict`,
+    method: 'get',
+    params
+  })
+}
+
+// 根据坐标反查地址详细信息
+export function getInfoByCoord(params) {
+  return request({
+    url: `${process.env.VUE_APP_LIST_URL}/meta-data/info-by-coord`,
+    method: 'get',
+    params
+  })
+}
