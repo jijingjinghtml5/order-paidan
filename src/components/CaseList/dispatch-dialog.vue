@@ -81,17 +81,18 @@
   </base-dialog>
 </template>
 <script>
-import BaseDialog from '@/components/base-dialog'
-import { CommonTableDataMixins, CaseListMixins } from '@/mixins'
-import Commontable from '@/components/commontable'
-import http from '@/api'
+import BaseDialog from '@/components/CaseList/base-dialog'
+// import { CommonTableDataMixins, CaseListMixins } from '@/mixins'
+import Commontable from '@/components/CaseList/common-table'
+// import http from '@/api'
+import { getChildMeta, getDepsByParent, getParents, getUsers, handleCaseDispatch } from '@/api/case'
 
 export default {
   components: {
     BaseDialog,
     Commontable
   },
-  mixins: [CommonTableDataMixins, CaseListMixins],
+  // mixins: [CommonTableDataMixins, CaseListMixins],
   props: {
     commandData: {
       type: Object,
@@ -156,8 +157,6 @@ export default {
     }
   },
   created() {
-    console.log(this.commandData)
-    console.log(this.confirmData)
     if (this.commandData.action_level_to === 2) {
       this.initTab(this.commandData.matchedRules)
     } else {
@@ -175,27 +174,27 @@ export default {
     },
     // 初始化props  type 0-平台 1-部门 2-人
     async initProps(type) {
-      const event_status = this.confirmData.event_status
+      const eventStatus = this.confirmData.event_status
       const matchedRules = this.commandData.matchedRules[0]
       const crossLevel = Math.max(...matchedRules.to.level) - matchedRules.from.level
       if (type == 0) {
-        this.initplatform(crossLevel, matchedRules, event_status)
+        this.initplatform(crossLevel, matchedRules, eventStatus)
       }
       if (type == 1) {
-        this.initDepartment(crossLevel, matchedRules, event_status)
+        this.initDepartment(crossLevel, matchedRules, eventStatus)
       }
       if (type == 2) {
-        this.initPersonnel(crossLevel, matchedRules, event_status)
+        this.initPersonnel(crossLevel, matchedRules, eventStatus)
       }
     },
     // 初始化平台下拉框数据
-    async initplatform(crossLevel, matchedRules, event_status) {
+    async initplatform(crossLevel, matchedRules, eventStatus) {
       // crossLevel 向下派遣在装配那边设置了不能向上级平台派遣所以小于0的情况不予考虑
       // 对于向下派遣也不存在同级之间相互派，所以等于0的情况不予考虑
       // 这里指平台派向平台，如果是部门派向平台，理论上不存在这种情况，现在予以屏蔽(matchedRules.from.type == 0)
       if (crossLevel > 0 && matchedRules.from.type == 0) {
         this.loading = true
-        const parent_code = event_status[`meta_level${matchedRules.from.level + 1}`]
+        const parentCode = eventStatus[`meta_level${matchedRules.from.level + 1}`]
         this.props = {
           lazy: true,
           checkStrictly: true,
@@ -204,10 +203,12 @@ export default {
           lazyLoad: async (node, resolve) => {
             const { level, value } = node
             if (crossLevel > level) {
-              const res = await http.get('/api_v3/manage/meta/child-meta', {
-                params: { parent_code: value || parent_code }
-              })
-              const result = res.data.response.data.map((item) => {
+              const res = await getChildMeta({ parent_code: value || parentCode })
+
+              // const res = await http.get('/api_v3/manage/meta/child-meta', {
+              //   params: { parent_code: value || parentCode }
+              // })
+              const result = res.response.data.map((item) => {
                 // 对于不是目标平台，disabled掉
                 if (!matchedRules.to.level.includes(item.level)) {
                   return { disabled: 'disabled', ...item }
@@ -226,11 +227,11 @@ export default {
       }
     },
     // 初始化部门下拉框数据
-    initDepartment(crossLevel, matchedRules, event_status) {
+    initDepartment(crossLevel, matchedRules, eventStatus) {
       // 平台派部门情况
       if (matchedRules.from.type == 0) {
         this.loading = true
-        const parent_code = event_status[`meta_level${matchedRules.from.level + 1}`]
+        const parentCode = eventStatus[`meta_level${matchedRules.from.level + 1}`]
         if (crossLevel > 0) {
           this.props = {
             lazy: true,
@@ -239,11 +240,13 @@ export default {
             label: 'name',
             lazyLoad: async (node, resolve) => {
               const { level, value, data } = node
-              let res, result
+              let res
+              let result
               if (data && data.selfType) {
-                res = await http.get('/api_v3/manage/meta/deps-by-parent', {
-                  params: { parent_code: value }
-                })
+                // res = await http.get('/api_v3/manage/meta/deps-by-parent', {
+                //   params: { parent_code: value }
+                // })
+                res = await getDepsByParent({ parent_code: value })
                 result =
                   res.data.response.data &&
                   res.data.response.data.map((item) => {
@@ -259,9 +262,10 @@ export default {
                 return
               }
               if (crossLevel > level) {
-                res = await http.get('/api_v3/manage/meta/child-meta', {
-                  params: { parent_code: value || parent_code }
-                })
+                // res = await http.get('/api_v3/manage/meta/child-meta', {
+                //   params: { parent_code: value || parentCode }
+                // })
+                res = await getChildMeta({ parent_code: value || parentCode })
                 result =
                   res.data.response.data &&
                   res.data.response.data.map((item) => {
@@ -271,9 +275,9 @@ export default {
                 // 平台数组的第一位增加直属部门选项,需要当前的平台在matchedRules输出的平台中, selfType 用于标志是部门了，后续用于判断是否继续下拉子部门
                 if (result && result.length && matchedRules.to.level.includes(result[0].level)) {
                   result.unshift({
-                    code: value || parent_code,
+                    code: value || parentCode,
                     name: '直属部门',
-                    self_code: value || parent_code,
+                    self_code: value || parentCode,
                     selfType: '2',
                     disabled: 'disabled',
                     level: (data && data.level) || matchedRules.from.level
@@ -297,16 +301,17 @@ export default {
             label: 'name',
             lazyLoad: async (node, resolve) => {
               const { value } = node
-              const res = await http.get('/api_v3/manage/meta/deps-by-parent', {
-                params: { parent_code: value || parent_code }
-              })
+              // const res = await http.get('/api_v3/manage/meta/deps-by-parent', {
+              //   params: { parent_code: value || parentCode }
+              // })
+              const res = await getDepsByParent({ parent_code: value || parentCode })
               const result =
                 res.data.response.data &&
                 res.data.response.data.map((item) => {
                   return {
                     ...item,
                     level: matchedRules.from.level,
-                    self_code: event_status[`meta_level${matchedRules.from.level + 1}`]
+                    self_code: eventStatus[`meta_level${matchedRules.from.level + 1}`]
                   }
                 })
               this.loading = false
@@ -320,7 +325,7 @@ export default {
         matchedRules.to.level.includes(matchedRules.from.level)
       ) {
         this.loading = true
-        const parent_code = event_status.department
+        const parentCode = eventStatus.department
         this.props = {
           lazy: true,
           checkStrictly: true,
@@ -328,16 +333,17 @@ export default {
           label: 'name',
           lazyLoad: async (node, resolve) => {
             const { value } = node
-            const res = await http.get('/api_v3/manage/meta/deps-by-parent', {
-              params: { parent_code: value || parent_code }
-            })
+            // const res = await http.get('/api_v3/manage/meta/deps-by-parent', {
+            //   params: { parent_code: value || parentCode }
+            // })
+            const res = await getDepsByParent({ parent_code: value || parentCode })
             const result =
               res.data.response.data &&
               res.data.response.data.map((item) => {
                 return {
                   ...item,
                   level: matchedRules.from.level,
-                  self_code: event_status[`meta_level${matchedRules.from.level + 1}`]
+                  self_code: eventStatus[`meta_level${matchedRules.from.level + 1}`]
                 }
               })
             this.loading = false
@@ -347,11 +353,11 @@ export default {
       }
     },
     // 初始化人员下拉框数据
-    initPersonnel(crossLevel, matchedRules, event_status) {
+    initPersonnel(crossLevel, matchedRules, eventStatus) {
       // 平台到人员的情况
       if (matchedRules.from.type == 0) {
         this.loading = true
-        const parent_code = event_status[`meta_level${matchedRules.from.level + 1}`]
+        const parentCode = eventStatus[`meta_level${matchedRules.from.level + 1}`]
         if (crossLevel > 0) {
           this.props = {
             lazy: true,
@@ -360,11 +366,13 @@ export default {
             label: 'name',
             lazyLoad: async (node, resolve) => {
               const { level, value, data } = node
-              let res, result
+              let res
+              let result
               if (data && data.selfType) {
-                res = await http.get('/api_v3/manage/meta/deps-by-parent', {
-                  params: { parent_code: value }
-                })
+                // res = await http.get('/api_v3/manage/meta/deps-by-parent', {
+                //   params: { parent_code: value }
+                // })
+                res = await getDepsByParent({ parent_code: value })
                 result =
                   res.data.response.data &&
                   res.data.response.data.map((item) => {
@@ -380,15 +388,16 @@ export default {
                 return
               }
               if (crossLevel > level) {
-                res = await http.get('/api_v3/manage/meta/child-meta', {
-                  params: { parent_code: value || parent_code }
-                })
+                // res = await http.get('/api_v3/manage/meta/child-meta', {
+                //   params: { parent_code: value || parentCode }
+                // })
+                res = await getChildMeta({ parent_code: value || parentCode })
                 result = res.data.response.data.map((item) => ({ disabled: 'disabled', ...item }))
                 // 平台数组的第一位增加直属部门选项,需要当前的平台在matchedRules输出的平台中, selfType 用于标志是部门了，后续用于判断是否继续下拉子部门
                 if (result && result.length && matchedRules.to.level.includes(result[0].level)) {
                   result.unshift({
-                    code: value || parent_code,
-                    self_code: value || parent_code,
+                    code: value || parentCode,
+                    self_code: value || parentCode,
                     name: '直属',
                     selfType: '2',
                     level: (data && data.level) || matchedRules.from.level,
@@ -411,9 +420,10 @@ export default {
             label: 'name',
             lazyLoad: async (node, resolve) => {
               const { value } = node
-              const res = await http.get('/api_v3/manage/meta/deps-by-parent', {
-                params: { parent_code: value || parent_code }
-              })
+              // const res = await http.get('/api_v3/manage/meta/deps-by-parent', {
+              //   params: { parent_code: value || parentCode }
+              // })
+              const res = await getDepsByParent({ parent_code: value || parentCode })
               const result =
                 res.data.response.data &&
                 res.data.response.data.map((item) => {
@@ -421,7 +431,7 @@ export default {
                     ...item,
                     level: matchedRules.from.level,
                     selfType: '1',
-                    self_code: event_status[`meta_level${matchedRules.from.level + 1}`]
+                    self_code: eventStatus[`meta_level${matchedRules.from.level + 1}`]
                   }
                 })
               this.loading = false
@@ -435,7 +445,7 @@ export default {
         matchedRules.to.level.includes(matchedRules.from.level)
       ) {
         this.loading = true
-        const parent_code = event_status.department
+        const parentCode = eventStatus.department
         this.props = {
           lazy: true,
           checkStrictly: true,
@@ -443,9 +453,10 @@ export default {
           label: 'name',
           lazyLoad: async (node, resolve) => {
             const { value } = node
-            const res = await http.get('/api_v3/manage/meta/deps-by-parent', {
-              params: { parent_code: value || parent_code }
-            })
+            // const res = await http.get('/api_v3/manage/meta/deps-by-parent', {
+            //   params: { parent_code: value || parentCode }
+            // })
+            const res = await getDepsByParent({ parent_code: value || parentCode })
             const result =
               res.data.response.data &&
               res.data.response.data.map((item) => {
@@ -453,7 +464,7 @@ export default {
                   ...item,
                   level: matchedRules.from.level,
                   selfType: '1',
-                  self_code: event_status[`meta_level${matchedRules.from.level + 1}`]
+                  self_code: eventStatus[`meta_level${matchedRules.from.level + 1}`]
                 }
               })
             this.loading = false
@@ -471,26 +482,28 @@ export default {
       } else {
         params = { [`meta_level${this.selectData.level + 1}`]: this.selectData.code, roles }
       }
-      const res = await http.get('/api_v3/app/meta-data/users', {
-        params: { page: this.currentPage, 'per-page': this.item, ...params }
-      })
+      // const res = await http.get('/api_v3/app/meta-data/users', {
+      //   params: { page: this.currentPage, 'per-page': this.item, ...params }
+      // })
+      const res = await getUsers({ page: this.currentPage, 'per-page': this.item, ...params })
       this.tableData = res.data.response.items
       this.total = res.data.response._meta && res.data.response._meta.count
     },
     // 向上派遣的数据
     async getUpdispatch() {
-      const event_status = this.confirmData.event_status
+      const eventStatus = this.confirmData.event_status
       let firstParent = '' // 获取第一次请求的parent_code
       // 取平台
-      if (event_status.type == 0) {
-        firstParent = event_status[`meta_level${+event_status.level + 1}`]
+      if (eventStatus.type == 0) {
+        firstParent = eventStatus[`meta_level${+eventStatus.level + 1}`]
       }
       // 取部门
-      if (event_status.type == 1) {
-        firstParent = event_status.department
+      if (eventStatus.type == 1) {
+        firstParent = eventStatus.department
       }
-      const res = await http.get('/api_v3/manage/meta/parents', { params: { code: firstParent } })
-      this.UpData = res.data.response.data[0]
+      // const res = await http.get('/api_v3/manage/meta/parents', { params: { code: firstParent } })
+      const res = await getParents({ code: firstParent })
+      this.UpData = res.response.data[0]
     },
     // 下拉框选择
     async handleChange() {
@@ -518,7 +531,7 @@ export default {
       }
     },
     // 向下派遣
-    doDispatch() {
+    async doDispatch() {
       if (this.tabType != 2 && !this.selectedOptions.length) {
         this.$message.warning('请选择下级平台或部门或人员！')
         return
@@ -548,75 +561,117 @@ export default {
         }
       ]
       const from = this.commandData.matchedRules[0].from
-      http({
-        method: 'post',
-        url: '/api_v3/app/event/dispatch',
-        data: {
-          eventId: this.confirmData.event.event_id,
-          coopId: 0,
-          menuId: this.menuId,
-          form,
-          action: this.commandData.id,
-          to,
-          from
-        }
+      const res = await handleCaseDispatch({
+        eventId: this.confirmData.event.event_id,
+        coopId: 0,
+        menuId: this.menuId,
+        form,
+        action: this.commandData.id,
+        to,
+        from
       })
-        .then((res) => {
-          this.loading = false
-          this.visible = false
-          if (res.data.success != 1) {
-            this.$message({
-              type: 'error',
-              message: (res.data.errors && res.data.errors.msg) || '操作失败！'
-            })
-            return
-          }
-          this.$message.success('派遣成功！')
-          this.$emit('cancel')
-          this.$emit('load-event')
+      this.loading = false
+      this.visible = false
+      if (res.data.success != 1) {
+        this.$message({
+          type: 'error',
+          message: (res.data.errors && res.data.errors.msg) || '操作失败！'
         })
-        .catch(() => {
-          this.loading = false
-        })
+        return
+      }
+      this.$message.success('派遣成功！')
+      this.$emit('cancel')
+      this.$emit('load-event')
+      // http({
+      //   method: 'post',
+      //   url: '/api_v3/app/event/dispatch',
+      //   data: {
+      //     eventId: this.confirmData.event.event_id,
+      //     coopId: 0,
+      //     menuId: this.menuId,
+      //     form,
+      //     action: this.commandData.id,
+      //     to,
+      //     from
+      //   }
+      // })
+      //   .then((res) => {
+      //     this.loading = false
+      //     this.visible = false
+      //     if (res.data.success != 1) {
+      //       this.$message({
+      //         type: 'error',
+      //         message: (res.data.errors && res.data.errors.msg) || '操作失败！'
+      //       })
+      //       return
+      //     }
+      //     this.$message.success('派遣成功！')
+      //     this.$emit('cancel')
+      //     this.$emit('load-event')
+      //   })
+      //   .catch(() => {
+      //     this.loading = false
+      //   })
     },
     // 向上派遣的提交
-    doUpDispatch() {
+    async doUpDispatch() {
       if (this.desc == '') {
         this.$message.warning('请输入派遣意见！')
         return
       }
       const form = [{ description: this.desc }]
       const from = this.commandData.matchedRules[0].from
-      http({
-        method: 'post',
-        url: '/api_v3/app/event/dispatch',
-        data: {
-          eventId: this.confirmData.event.event_id,
-          coopId: 0,
-          menuId: this.menuId,
-          form,
-          action: this.commandData.id,
-          to: [this.commandData.up[0].to],
-          from
-        }
+      const res = await handleCaseDispatch({
+        eventId: this.confirmData.event.event_id,
+        coopId: 0,
+        menuId: this.menuId,
+        form,
+        action: this.commandData.id,
+        to: [this.commandData.up[0].to],
+        from
       })
-        .then((res) => {
-          this.loading = false
-          this.visible = false
-          if (res.data.success != 1) {
-            this.$message({
-              type: 'error',
-              message: (res.data.errors && res.data.errors.msg) || '操作失败！'
-            })
-            return
-          }
-          this.$message.success('派遣成功！')
-          this.$emit('cancel')
-          this.$emit('load-event')
+      this.loading = false
+      this.visible = false
+      if (res.data.success != 1) {
+        this.$message({
+          type: 'error',
+          message: (res.data.errors && res.data.errors.msg) || '操作失败！'
         })
-        .catch(() => {
-          this.loading = false
-        })
+        return
+      }
+      this.$message.success('派遣成功！')
+      this.$emit('cancel')
+      this.$emit('load-event')
+      // http({
+      //   method: 'post',
+      //   url: '/api_v3/app/event/dispatch',
+      //   data: {
+      //     eventId: this.confirmData.event.event_id,
+      //     coopId: 0,
+      //     menuId: this.menuId,
+      //     form,
+      //     action: this.commandData.id,
+      //     to: [this.commandData.up[0].to],
+      //     from
+      //   }
+      // })
+      //   .then((res) => {
+      //     this.loading = false
+      //     this.visible = false
+      //     if (res.data.success != 1) {
+      //       this.$message({
+      //         type: 'error',
+      //         message: (res.data.errors && res.data.errors.msg) || '操作失败！'
+      //       })
+      //       return
+      //     }
+      //     this.$message.success('派遣成功！')
+      //     this.$emit('cancel')
+      //     this.$emit('load-event')
+      //   })
+      //   .catch(() => {
+      //     this.loading = false
+      //   })
     },
     getTabName(val) {
       switch (val) {

@@ -49,12 +49,12 @@
               v-if="isResolve == 0 && data.actions && data.actions.length"
               direction="vertical"
             />
+            <!-- @loading="lockLoading" -->
             <el-dropdown
               v-if="isResolve == 0 && data.actions && data.actions.length"
               style="height: 50px"
               :tabindex="index"
               @command="handleCommand($event, data)"
-              @loading="lockLoading"
             >
               <span class="card-btn"
                 ><i class="el-icon-circle-plus-outline card-icon" />更多操作<i
@@ -89,16 +89,35 @@
         @afterSubmitSuccess="onSubmitSuccess"
       />
     </base-dialog>
+    <!--派遣弹框-->
+    <dispatch-dialog
+      v-if="dispatchVisible"
+      :visible.sync="dispatchVisible"
+      :title="title"
+      :command-data="commandData"
+      :confirm-data="confirmData"
+      @confirm="actionConfirm"
+      @load-event="loadEvent"
+      @cancel="dispatchVisible = false"
+    >
+      <paper-index
+        ref="paperIndex"
+        :question_id="commandData.form_id"
+        :uid="uid"
+        @afterSubmitSuccess="onSubmitSuccess"
+      />
+    </dispatch-dialog>
   </div>
 </template>
 
 <script>
+import Storage from 'good-storage'
 import CommonFilter from '@/components/CaseList/filter'
 import CommonCard from '@/components/CaseList/card'
 import CommonPage from '@/components/CaseList/pagination'
 import BaseDialog from '@/components/CaseList/base-dialog'
-// import DispatchDialog from '@/components/CaseList/dispatch-dialog'
-import { getEvents } from '@/api/case'
+import DispatchDialog from '@/components/CaseList/dispatch-dialog'
+import { getEvents, handleCaseDispatch } from '@/api/case'
 
 export default {
   name: 'CardList',
@@ -112,14 +131,23 @@ export default {
       tableParams: {},
       setHeight: '100%',
       setCardHeight: '100%',
-      isResolve: 0
+      isResolve: 0,
+      visible: false,
+      dispatchVisible: false, // 派遣弹框是否出现
+      confirmData: '',
+      commandData: '',
+      currentActionId: '',
+      title: '',
+      uid: Storage.get('userId'),
+      formMenus: '' // 表单请求的返回
     }
   },
   components: {
     CommonFilter,
     CommonCard,
     CommonPage,
-    BaseDialog
+    BaseDialog,
+    DispatchDialog
   },
   computed: {
     menuId() {
@@ -129,6 +157,75 @@ export default {
   methods: {
     openWindow() {
       //
+    },
+    actionConfirm() {
+      this.formMenus = this.$refs.paperIndex.menus
+      this.$refs.paperIndex.submit()
+      // if (this.formMenus) {
+      //   this.$refs.paperIndex.submit()
+      // } else {
+      //   this.$message.warning('表单不能为空！')
+      // }
+    },
+    onSubmitSuccess(val) {
+      const form = []
+      this.formMenus.forEach((item) => {
+        form.push({
+          key: item.config.dataField.name,
+          value: val.data.answer[`id${item.id}`] || null,
+          id: item.id
+        })
+      })
+      console.log(form)
+      if (this.commandData.action_level_to != 2 && this.commandData.action_level_to != 1) {
+        this.dispatch(form)
+      }
+    },
+    async dispatch(form) {
+      this.loading = true
+      const res = await handleCaseDispatch({
+        eventId: this.confirmData.event.event_id,
+        coopId: 0,
+        menuId: this.menuId,
+        form,
+        action: this.currentActionId,
+        formId: this.commandData.form_id
+      })
+      this.loading = false
+      this.visible = false
+      if (res.data.success != 1) {
+        this.$message({
+          type: 'error',
+          message: (res.data.errors && res.data.errors.msg) || '操作失败！'
+        })
+        return
+      }
+      this.loadEvent()
+      // http({
+      //   method: 'post',
+      //   url: '/api_v3/app/event/dispatch',
+      //   data: {
+      //     eventId: this.confirmData.event.event_id,
+      //     coopId: 0,
+      //     menuId: this.menuId,
+      //     form,
+      //     action: this.currentActionId,
+      //     formId: this.commandData.form_id
+      //   }
+      // }).then(res => {
+      //   this.loading = false
+      //   this.visible = false
+      //   if (res.data.success != 1) {
+      //     this.$message({
+      //       type: 'error',
+      //       message: res.data.errors && res.data.errors.msg || '操作失败！'
+      //     })
+      //     return
+      //   }
+      //   this.loadEvent()
+      // }).catch(() => {
+      //   this.loading = false
+      // })
     },
     // action_level_to 0-默认 1-向上 2-向下 3-退单
     handleCommand(command, data) {

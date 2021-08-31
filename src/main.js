@@ -1,5 +1,5 @@
 import Vue from 'vue'
-
+import FormPaperIndex from 'form-paper-index'
 import ElementUI from 'element-ui'
 
 import '@/styles/index.scss'
@@ -43,6 +43,8 @@ Date.prototype.Format = function (fmt) {
 }
 
 Vue.use(ElementUI, { size: 'mini' })
+// // 表单
+Vue.use(FormPaperIndex)
 Vue.component('GlobalTable', GlobalTable)
 Vue.component('GlobalSearch', GlobalSearch)
 Vue.component('GlobalDialog', GlobalDialog)

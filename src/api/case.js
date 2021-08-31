@@ -79,3 +79,46 @@ export function getEvents(params) {
     params
   })
 }
+
+/**
+ * @param {string} parent_code
+ */
+export function getChildMeta(params) {
+  return request({
+    url: `/api_v3/manage/meta/child-meta`,
+    method: 'get',
+    params
+  })
+}
+
+export function getDepsByParent(params) {
+  return request({
+    url: `/api_v3/manage/meta/deps-by-parent`,
+    method: 'get',
+    params
+  })
+}
+
+export function getParents(params) {
+  return request({
+    url: `/api_v3/manage/meta/parents`,
+    method: 'get',
+    params
+  })
+}
+
+export function getUsers(params) {
+  return request({
+    url: `/api_v3/app/meta-data/users`,
+    method: 'get',
+    params
+  })
+}
+
+export function handleCaseDispatch(data) {
+  return request({
+    url: `/api_v3/app/event/dispatch`,
+    method: 'post',
+    data
+  })
+}

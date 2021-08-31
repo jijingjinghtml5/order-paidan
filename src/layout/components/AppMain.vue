@@ -29,7 +29,7 @@ export default {
   width: 100%;
   position: relative;
   overflow: hidden;
-  padding: 0 16px;
+  // padding: 0 16px;
 }
 
 // .fixed-header + .app-main {}
@@ -51,6 +51,16 @@ export default {
 .el-popup-parent--hidden {
   .fixed-header {
     padding-right: 15px;
+  }
+}
+.zmc-paper {
+  .paper-item {
+    &.flex {
+      .item-answer {
+        display: block;
+        text-align: unset;
+      }
+    }
   }
 }
 </style>
