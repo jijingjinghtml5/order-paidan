@@ -82,7 +82,7 @@
 </template>
 <script>
 import BaseDialog from '@/components/CaseList/base-dialog'
-// import { CommonTableDataMixins, CaseListMixins } from '@/mixins'
+import { CommonTableDataMixins } from '@/mixins/common'
 import Commontable from '@/components/CaseList/common-table'
 // import http from '@/api'
 import { getChildMeta, getDepsByParent, getParents, getUsers, handleCaseDispatch } from '@/api/case'
@@ -92,7 +92,7 @@ export default {
     BaseDialog,
     Commontable
   },
-  // mixins: [CommonTableDataMixins, CaseListMixins],
+  mixins: [CommonTableDataMixins],
   props: {
     commandData: {
       type: Object,
@@ -248,8 +248,8 @@ export default {
                 // })
                 res = await getDepsByParent({ parent_code: value })
                 result =
-                  res.data.response.data &&
-                  res.data.response.data.map((item) => {
+                  res.response.data &&
+                  res.response.data.map((item) => {
                     return {
                       ...item,
                       selfType: '1',
@@ -306,8 +306,8 @@ export default {
               // })
               const res = await getDepsByParent({ parent_code: value || parentCode })
               const result =
-                res.data.response.data &&
-                res.data.response.data.map((item) => {
+                res.response.data &&
+                res.response.data.map((item) => {
                   return {
                     ...item,
                     level: matchedRules.from.level,
@@ -338,8 +338,8 @@ export default {
             // })
             const res = await getDepsByParent({ parent_code: value || parentCode })
             const result =
-              res.data.response.data &&
-              res.data.response.data.map((item) => {
+              res.response.data &&
+              res.response.data.map((item) => {
                 return {
                   ...item,
                   level: matchedRules.from.level,
@@ -374,8 +374,8 @@ export default {
                 // })
                 res = await getDepsByParent({ parent_code: value })
                 result =
-                  res.data.response.data &&
-                  res.data.response.data.map((item) => {
+                  res.response.data &&
+                  res.response.data.map((item) => {
                     return {
                       ...item,
                       selfType: '1',
@@ -425,8 +425,8 @@ export default {
               // })
               const res = await getDepsByParent({ parent_code: value || parentCode })
               const result =
-                res.data.response.data &&
-                res.data.response.data.map((item) => {
+                res.response.data &&
+                res.response.data.map((item) => {
                   return {
                     ...item,
                     level: matchedRules.from.level,
@@ -458,8 +458,8 @@ export default {
             // })
             const res = await getDepsByParent({ parent_code: value || parentCode })
             const result =
-              res.data.response.data &&
-              res.data.response.data.map((item) => {
+              res.response.data &&
+              res.response.data.map((item) => {
                 return {
                   ...item,
                   level: matchedRules.from.level,
@@ -486,8 +486,8 @@ export default {
       //   params: { page: this.currentPage, 'per-page': this.item, ...params }
       // })
       const res = await getUsers({ page: this.currentPage, 'per-page': this.item, ...params })
-      this.tableData = res.data.response.items
-      this.total = res.data.response._meta && res.data.response._meta.count
+      this.tableData = res.response.items
+      this.total = res.response._meta && res.response._meta.count
     },
     // 向上派遣的数据
     async getUpdispatch() {
@@ -503,7 +503,8 @@ export default {
       }
       // const res = await http.get('/api_v3/manage/meta/parents', { params: { code: firstParent } })
       const res = await getParents({ code: firstParent })
-      this.UpData = res.response.data[0]
+      console.log(res, 'res')
+      this.UpData = res.response.data && res.response.data[0]
     },
     // 下拉框选择
     async handleChange() {
