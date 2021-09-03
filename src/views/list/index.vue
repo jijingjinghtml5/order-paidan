@@ -16,22 +16,23 @@
             <el-tab-pane label="历史操作" name="1" />
           </el-tabs>
         </el-col>
-        <!-- <el-col v-if="listCard" style="width: 110px; line-height: 40px">
-          <columnsCustomizeSave
-            v-model="isResolve"
-            :init-checkbox-list="checkboxList"
-            :table-show-columns="columnLabel"
-            @tableShowColumnsChange="checkboxChange"
-          />
-        </el-col> -->
+        <el-col style="width: 50px; line-height: 40px">
+          <!-- 排序 -->
+          <CommonSort :sort-key="sortKey" :sort-type="sortType" @sort-change="toSort"></CommonSort>
+        </el-col>
       </el-row>
       <!-- 卡片模式 -->
       <CommonCard
+        v-if="listCard"
         :loading="loading"
         :table-data="tableData"
         :set-card-height="setCardHeight"
+        :total="total"
         :is-resolve="isResolve"
-        @pagination="setPage"
+        @current-change="setPage"
+        :page-size="limit"
+        :current-page="currentPage"
+        @size-change="setPageItem"
       >
         <template slot="actions" slot-scope="{ index, data }">
           <div>
@@ -71,9 +72,73 @@
           </div>
         </template>
       </CommonCard>
+      <!-- 表格模式 -->
+      <CommonTable
+        v-if="!listCard"
+        :table-data="tableData"
+        :table-head="tableHeaders"
+        :set-height="setHeight"
+        :loading="loading"
+        :sort-key="sortKey"
+        :sort-type="sortType"
+        border
+        :current-page="currentPage"
+        :page-size="limit"
+        :total="total"
+        :cell-style="{ textAlign: 'center', fontSize: '12px' }"
+        :header-cell-style="{ textAlign: 'center', fontSize: '12px' }"
+        @size-change="setPageItem"
+        @current-change="setPage"
+      >
+        <template slot="last-columns">
+          <el-table-column key="110" :min-width="150" fixed="right" label="操作">
+            <template v-slot:default="scope">
+              <el-button
+                @click="
+                  openWindow(
+                    `/case-detail-new/${scope.row.event.event_id}?type=${menuId}&isResolve=${isResolve}`
+                  )
+                "
+                size="medium"
+                type="text"
+                >查看</el-button
+              >
+              <template v-for="item in scope.row.actions">
+                <el-button
+                  v-if="hasBtn(item)"
+                  @click="handleCommand(item, scope.row)"
+                  :key="item.code"
+                  :command="item"
+                  size="medium"
+                  type="text"
+                  >{{ item.name }}</el-button
+                >
+              </template>
+            </template>
+          </el-table-column>
+        </template>
+      </CommonTable>
       <!-- 分页 -->
-      <CommonPage :total="total" @pagination="setPage" :page="currentPage" :limit="limit" />
+      <!-- <CommonPage :total="total" @pagination="setPage" :page="currentPage" :limit="limit" /> -->
     </div>
+    <!-- 弹窗prompt类型 -->
+    <common-prompt
+      :visible="showCommonPromptDialog"
+      :title="commonPromptDialogTitle"
+      :need-case-el-button="commonNeedCaseElButton"
+      :prompt-curr-data="commonPromptCurrData"
+      :confirm-button-text="commonPromptConfirmButtonText"
+      :tit-icon="commonPromptTitIcon"
+      :cancel-button-text="commonPromptCancelButtonText"
+      :is-confirm="commonIsConfirmPrompt"
+      :prompt-type="commonPromptType"
+      :place-desc="commonPromptDesc"
+      :default-desc="commonPromptDefaultDesc"
+      :prompt-loading="commonPromptDialogLoading"
+      :extra-mess="commonPromptExtraMess"
+      @cancelFun="cancelPromptDialog"
+      @confirmFun="comfirmPromptDialog"
+    />
     <!--操作弹框-->
     <base-dialog
       v-if="visible"
@@ -113,24 +178,22 @@
 <script>
 import Storage from 'good-storage'
 import CommonFilter from '@/components/CaseList/filter'
-import CommonCard from '@/components/CaseList/card'
-import CommonPage from '@/components/CaseList/pagination'
+import CommonSort from '@/components/CaseList/common-sort'
+import CommonCard from '@/components/CaseList/common-card'
+import CommonTable from '@/components/CaseList/common-table'
+// import CommonPage from '@/components/CaseList/pagination'
 import BaseDialog from '@/components/CaseList/base-dialog'
 import DispatchDialog from '@/components/CaseList/dispatch-dialog'
-import { getEvents, handleCaseDispatch } from '@/api/case'
+import { getEvents, handleCaseDispatch, addEventTag } from '@/api/case'
 
 export default {
   name: 'CardList',
   data() {
     return {
-      tableData: [],
-      total: 0,
       loading: false,
-      currentPage: 1,
-      limit: 10,
+      listCard: false,
+      sortVisible: false,
       tableParams: {},
-      setHeight: '100%',
-      setCardHeight: '100%',
       isResolve: 0,
       visible: false,
       dispatchVisible: false, // 派遣弹框是否出现
@@ -140,13 +203,36 @@ export default {
       title: '',
       uid: Storage.get('userId'),
       HTML_BASE: process.env.VUE_APP_HTML_URL,
-      formMenus: '' // 表单请求的返回
+      formMenus: '', // 表单请求的返回
+      // 卡片列表数据
+      tableHeaders: [
+        { prop: 'event.code', label: '案件编号', minwidth: '160px' },
+        { prop: 'event.name', label: '案件名称', minwidth: '140px' },
+        {
+          prop: 'address',
+          label: '案件地址',
+          minwidth: '200px',
+          labelCustomize: true,
+          getLabel: (row) =>
+            row.event.address + (row.event.addressNote ? `(${row.event.addressNote})` : '')
+        }
+      ],
+      sortKey: 'event_time',
+      sortType: '0',
+      tableData: [],
+      total: 0,
+      currentPage: 1,
+      limit: 10,
+      setHeight: '100%',
+      setCardHeight: '100%'
     }
   },
   components: {
     CommonFilter,
     CommonCard,
-    CommonPage,
+    CommonTable,
+    CommonSort,
+    // CommonPage,
     BaseDialog,
     DispatchDialog
   },
@@ -209,31 +295,6 @@ export default {
         return
       }
       this.loadEvent()
-      // http({
-      //   method: 'post',
-      //   url: '/api_v3/app/event/dispatch',
-      //   data: {
-      //     eventId: this.confirmData.event.event_id,
-      //     coopId: 0,
-      //     menuId: this.menuId,
-      //     form,
-      //     action: this.currentActionId,
-      //     formId: this.commandData.form_id
-      //   }
-      // }).then(res => {
-      //   this.loading = false
-      //   this.visible = false
-      //   if (res.data.success != 1) {
-      //     this.$message({
-      //       type: 'error',
-      //       message: res.data.errors && res.data.errors.msg || '操作失败！'
-      //     })
-      //     return
-      //   }
-      //   this.loadEvent()
-      // }).catch(() => {
-      //   this.loading = false
-      // })
     },
     // action_level_to 0-默认 1-向上 2-向下 3-退单
     handleCommand(command, data) {
@@ -244,13 +305,41 @@ export default {
       const type = command.type
       // type: 1：阶段，2：状态，3：系统内置操作，4：操作，5：卡片，6：详情，7：打印，9：标签页，10：筛选，11：排序，12：标签操作，13：标签
       if (type == 12) {
-        // this.addTag()
+        this.addTag()
       } else if (type == 3) {
         // this.goPage(data)
       } else if (command.action_level_to === 2 || command.action_level_to === 1) {
         this.dispatchVisible = true
       } else {
         this.visible = true
+      }
+    },
+    // 调用打标签接口
+    addTag() {
+      this.showCommonPromptDialog = true
+      this.commonPromptDialogTitle = '提示'
+      this.commonPromptDesc = ''
+      this.commonPromptType = 'addTagSubmit'
+      this.commonPromptExtraMess = {}
+      this.commonPromptDefaultDesc = `确认${this.commandData.name}?`
+      this.commonNeedCaseElButton = true
+      this.commonPromptCurrData = this.confirmData
+      this.commonIsConfirmPrompt = true
+      this.commonPromptTitIcon = 'warning'
+    },
+    async addTagSubmit() {
+      this.commonPromptDialogLoading = true
+      const res = await addEventTag({
+        event_id: this.confirmData.event.event_id,
+        code: this.commandData.ext
+      })
+      this.showCommonPromptDialog = false
+      this.commonPromptDialogLoading = false
+      if (res.code === 200) {
+        this.$message.success('操作成功！')
+        this.loadEvent()
+      } else {
+        this.$message.error('操作失败！')
       }
     },
     hasBtn(item) {
@@ -284,7 +373,9 @@ export default {
         ...this.tableParams,
         'per-page': this.limit,
         page: this.currentPage,
-        isResolve: this.isResolve
+        isResolve: this.isResolve,
+        sort: this.sortKey,
+        sort_type: this.sortType
       }
       obj.menuId = this.menuId
       // obj.dataSource = 'mysql'
@@ -330,10 +421,18 @@ export default {
         this.$message(res.data.msg || '数据请求失败!')
       }
     },
+    toSort(a) {
+      this.sortKey = a.sortKey
+      this.sortType = a.sortType
+      this.loadEvent()
+    },
     // 页码信息变化
-    setPage(obj) {
-      this.currentPage = obj.page
-      this.limit = obj.limit
+    setPage(val) {
+      this.currentPage = val
+      this.loadEvent()
+    },
+    setPageItem(size) {
+      this.limit = size
       this.loadEvent()
     },
     resetHeight() {
@@ -352,9 +451,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
-/* .row-bg {
-  background: #fff;
-} */
+.row-bg {
+  ::v-deep .el-tabs__nav-wrap {
+    &::after {
+      background-color: unset;
+    }
+  }
+}
 .card-btn {
   color: #5b5bd5;
   font-size: 14px;

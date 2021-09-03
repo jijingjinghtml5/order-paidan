@@ -77,7 +77,7 @@
       </template>
       <slot name="last-columns" />
     </el-table>
-    <div v-if="isPage" style="margin-top: 10px; text-align: right">
+    <div style="margin-top: 10px; text-align: right">
       <el-pagination
         v-if="!loading"
         :current-page="currentPage"

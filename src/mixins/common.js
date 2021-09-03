@@ -144,6 +144,60 @@ export const CommonTableDataMixins = {
   }
 }
 
-export const commonDialog = {
-  //
+/**
+ * 系统中prompt改写成el-dialog
+ * showCommonPromptDialog 是否显示弹窗
+ * commonPromptDialogLoading 提交按钮loading
+ * commonPromptDialogTitle 弹窗标题
+ * commonPromptConfirmButtonText 确认按钮文案
+ * commonPromptCancelButtonText 取消按钮文案
+ * commonPromptDefaultDesc 默认提示语
+ * commonNeedCaseElButton 是否需要锁验证
+ * commonPromptDesc 输入框占位语
+ * commonPromptType 事件类型
+ * commonPromptExtraMess 额外信息
+ * commonPromptTitIcon 提示语的icon
+ * commonPromptCurrData 加锁时的案件信息
+ */
+export const CommonPromptHandleMixins = {
+  data() {
+    return {
+      showCommonPromptDialog: false,
+      commonPromptDialogLoading: false,
+      commonPromptDialogTitle: '',
+      commonPromptConfirmButtonText: '确 定',
+      commonPromptCancelButtonText: '取 消',
+      commonPromptDefaultDesc: '',
+      commonNeedCaseElButton: false,
+      commonPromptDesc: '',
+      commonPromptType: '',
+      commonPromptExtraMess: {},
+      commonIsConfirmPrompt: false,
+      commonPromptTitIcon: '',
+      commonPromptCurrData: {}
+    }
+  },
+  methods: {
+    initPromptDialog() {
+      this.showCommonPromptDialog = false
+      this.commonPromptDialogLoading = false
+      this.commonPromptDialogTitle = ''
+      this.commonPromptConfirmButtonText = '确 定'
+      this.commonPromptCancelButtonText = '取 消'
+      this.commonPromptDefaultDesc = ''
+      this.commonNeedCaseElButton = false
+      this.commonPromptDesc = ''
+      this.commonPromptType = ''
+      this.commonPromptExtraMess = {}
+      this.commonIsConfirmPrompt = false
+      this.commonPromptTitIcon = ''
+      this.commonPromptCurrData = {}
+    },
+    comfirmPromptDialog(params) {
+      this[params.promptType](params)
+    },
+    cancelPromptDialog() {
+      this.initPromptDialog()
+    }
+  }
 }

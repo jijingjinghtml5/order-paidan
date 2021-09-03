@@ -308,33 +308,6 @@ export default {
         return
       }
       window.history.back()
-      // http({
-      //   method: 'post',
-      //   url: '/api_v3/app/event/dispatch',
-      //   data: {
-      //     eventId: this.$route.params.id,
-      //     coopId: 0,
-      //     menuId: this.$route.query.type,
-      //     form,
-      //     action: this.formData.id,
-      //     formId: this.formData.form_id
-      //   }
-      // })
-      //   .then((res) => {
-      //     this.loading = false
-      //     this.visible = false
-      //     if (res.data.success != 1) {
-      //       this.$message({
-      //         type: 'error',
-      //         message: (res.data.errors && res.data.errors.msg) || '操作失败！'
-      //       })
-      //       return
-      //     }
-      //     window.history.back()
-      //   })
-      //   .catch(() => {
-      //     this.loading = false
-      //   })
     },
     loadEvent() {
       window.history.back()

@@ -267,8 +267,8 @@ export default {
                 // })
                 res = await getChildMeta({ parent_code: value || parentCode })
                 result =
-                  res.data.response.data &&
-                  res.data.response.data.map((item) => {
+                  res.response.data &&
+                  res.response.data.map((item) => {
                     // 对于平台，都要disabled掉，因为目标是部门
                     return { disabled: 'disabled', ...item }
                   })
@@ -392,7 +392,7 @@ export default {
                 //   params: { parent_code: value || parentCode }
                 // })
                 res = await getChildMeta({ parent_code: value || parentCode })
-                result = res.data.response.data.map((item) => ({ disabled: 'disabled', ...item }))
+                result = res.response.data.map((item) => ({ disabled: 'disabled', ...item }))
                 // 平台数组的第一位增加直属部门选项,需要当前的平台在matchedRules输出的平台中, selfType 用于标志是部门了，后续用于判断是否继续下拉子部门
                 if (result && result.length && matchedRules.to.level.includes(result[0].level)) {
                   result.unshift({
@@ -573,10 +573,10 @@ export default {
       })
       this.loading = false
       this.visible = false
-      if (res.data.success != 1) {
+      if (res.success != 1) {
         this.$message({
           type: 'error',
-          message: (res.data.errors && res.data.errors.msg) || '操作失败！'
+          message: (res.errors && res.errors.msg) || '操作失败！'
         })
         return
       }

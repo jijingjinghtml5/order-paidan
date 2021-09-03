@@ -148,3 +148,21 @@ export function getInfoByCoord(params) {
     params
   })
 }
+
+// 获取案件锁的状态
+export function getLock(params) {
+  return request({
+    url: `/api_v3/app/event/get-lock`,
+    method: 'get',
+    params
+  })
+}
+
+// 案件标签
+export function addEventTag(data) {
+  return request({
+    url: `/api_v3/app/event/add-tag`,
+    method: 'post',
+    data
+  })
+}

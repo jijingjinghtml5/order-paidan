@@ -3,10 +3,14 @@ import FormPaperIndex from 'form-paper-index'
 import ElementUI from 'element-ui'
 
 import '@/styles/index.scss'
-import GlobalTable from '@/components/Base/GlobalTable'
-import GlobalSearch from '@/components/Base/GlobalSearch'
-import GlobalDialog from '@/components/Base/GlobalDialog'
+// import GlobalTable from '@/components/Base/GlobalTable'
+// import GlobalSearch from '@/components/Base/GlobalSearch'
+import CommonPrompt from '@/components/CommonDialog/prompt'
+import CaseElButton from '@/components/CaseBtn/base-btn'
+import LockButton from '@/components/CaseBtn/lock-btn'
+import SpanElButton from '@/components/CaseBtn/span-btn'
 
+import { CommonPromptHandleMixins } from '@/mixins/common'
 import App from './App.vue'
 import store from './store'
 import router from './router'
@@ -14,6 +18,7 @@ import router from './router'
 import '@/icons' // icon
 import '@/permission' // permission control
 import './directive/dialogDrag'
+import './directive/preventReClick'
 import '@/assets/icon/style.css'
 
 // eslint-disable-next-line
@@ -46,9 +51,15 @@ Date.prototype.Format = function (fmt) {
 Vue.use(ElementUI, { size: 'mini' })
 // // 表单
 Vue.use(FormPaperIndex)
-Vue.component('GlobalTable', GlobalTable)
-Vue.component('GlobalSearch', GlobalSearch)
-Vue.component('GlobalDialog', GlobalDialog)
+// Vue.component('GlobalTable', GlobalTable)
+// Vue.component('GlobalSearch', GlobalSearch)
+Vue.component('CaseElButton', CaseElButton)
+Vue.component('LockButton', LockButton)
+Vue.component('SpanElButton', SpanElButton)
+// 全局组件
+Vue.component('CommonPrompt', CommonPrompt)
+// 全局mixin
+Vue.mixin(CommonPromptHandleMixins)
 
 Vue.config.productionTip = false
 
