@@ -8,7 +8,7 @@
     :index="item.category == 1 ? item.id : item.url"
     :class="{ 'submenu-title-noDropdown': !isNest }"
   >
-    <item
+    <Item
       :icon="onlyOneChild.icon || item.icon"
       :title="onlyOneChild.name"
       :value="onlyOneChild.calcu == 1 ? onlyOneChild.count : 0"
@@ -18,7 +18,7 @@
 
   <el-submenu v-else ref="subMenu" :index="item.id" popper-append-to-body>
     <template slot="title">
-      <item
+      <Item
         v-if="item"
         :icon="item.icon"
         :value="item.calcu == 1 ? item.count : 0"

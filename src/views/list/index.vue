@@ -1,7 +1,7 @@
 <template>
   <div class="z-page-wrapper">
     <div class="z-page-header">
-      <CommonFilter @search-submit="searchData" />
+      <CommonFilter @search-submit="searchData" :filter-time-type="filterTimeType" />
     </div>
     <div class="z-page-body">
       <el-row class="row-bg" type="flex">
@@ -177,11 +177,10 @@
 
 <script>
 import Storage from 'good-storage'
-import CommonFilter from '@/components/CaseList/filter'
+import CommonFilter from '@/components/CaseList/common-filter'
 import CommonSort from '@/components/CaseList/common-sort'
 import CommonCard from '@/components/CaseList/common-card'
 import CommonTable from '@/components/CaseList/common-table'
-// import CommonPage from '@/components/CaseList/pagination'
 import BaseDialog from '@/components/CaseList/base-dialog'
 import DispatchDialog from '@/components/CaseList/dispatch-dialog'
 import { getEvents, handleCaseDispatch, addEventTag } from '@/api/case'
@@ -217,6 +216,7 @@ export default {
             row.event.address + (row.event.addressNote ? `(${row.event.addressNote})` : '')
         }
       ],
+      filterTimeType: ['eventTime', 'checkTime'],
       sortKey: 'event_time',
       sortType: '0',
       tableData: [],
@@ -270,7 +270,6 @@ export default {
           id: item.id
         })
       })
-      console.log(form)
       if (this.commandData.action_level_to != 2 && this.commandData.action_level_to != 1) {
         this.dispatch(form)
       }
@@ -386,6 +385,7 @@ export default {
         this.loading = false
       }
     },
+    // 处理表单数据
     setTableData(res) {
       this.loading = false
       if (res && res.code == 200) {
@@ -421,20 +421,23 @@ export default {
         this.$message(res.data.msg || '数据请求失败!')
       }
     },
+    // 排序
     toSort(a) {
       this.sortKey = a.sortKey
       this.sortType = a.sortType
       this.loadEvent()
     },
-    // 页码信息变化
+    // 页码变化
     setPage(val) {
       this.currentPage = val
       this.loadEvent()
     },
+    // 页数变化
     setPageItem(size) {
       this.limit = size
       this.loadEvent()
     },
+    // 计算卡片列表高度
     resetHeight() {
       const domBody = document.getElementsByClassName('z-page-body')[0]
       const domHead = document.getElementsByClassName('z-page-header')[0]

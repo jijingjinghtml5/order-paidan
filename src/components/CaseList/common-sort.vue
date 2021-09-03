@@ -26,6 +26,8 @@
   </el-popover>
 </template>
 <script>
+import { sortTimeType } from '@/constants/filter_var'
+
 export default {
   props: {
     sortKey: {
@@ -42,9 +44,7 @@ export default {
       sortVisible: false,
       sortTypeNew: this.sortType,
       sortKeyNew: this.sortKey,
-      selectOption: {
-        event_time: '上报时间'
-      }
+      selectOption: sortTimeType
     }
   },
   methods: {
