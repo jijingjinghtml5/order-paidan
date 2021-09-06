@@ -1,41 +1,46 @@
 <template>
-  <el-menu-item
-    v-if="
-      hasOneShowingChild(item.children, item) &&
-      (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
-      !item.alwaysShow
-    "
-    :index="item.category == 1 ? item.id : item.url"
-    :class="{ 'submenu-title-noDropdown': !isNest }"
-  >
-    <Item
-      :icon="onlyOneChild.icon || item.icon"
-      :title="onlyOneChild.name"
-      :value="onlyOneChild.calcu == 1 ? onlyOneChild.count : 0"
-      :path="basePath"
-    />
-  </el-menu-item>
+  <div>
+    <template
+      v-if="
+        hasOneShowingChild(item.children, item) &&
+        (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
+        !item.alwaysShow
+      "
+    >
+      <el-menu-item
+        :index="item.category == 1 ? item.id : item.url"
+        :class="{ 'submenu-title-noDropdown': !isNest }"
+      >
+        <item
+          :icon="onlyOneChild.icon || item.icon"
+          :title="onlyOneChild.name"
+          :value="onlyOneChild.calcu == 1 ? onlyOneChild.count : 0"
+          :path="basePath"
+        />
+      </el-menu-item>
+    </template>
 
-  <el-submenu v-else ref="subMenu" :index="item.id" popper-append-to-body>
-    <template slot="title">
-      <Item
-        v-if="item"
-        :icon="item.icon"
-        :value="item.calcu == 1 ? item.count : 0"
-        :title="item.name"
-      />
-    </template>
-    <template v-for="child in item.children">
-      <sidebar-item
-        v-if="!child.hidden"
-        :key="child.id"
-        :is-nest="true"
-        :item="child"
-        :base-path="resolvePath(child)"
-        class="nest-menu"
-      />
-    </template>
-  </el-submenu>
+    <el-submenu v-else ref="subMenu" :index="item.id" popper-append-to-body>
+      <template slot="title">
+        <Item
+          v-if="item"
+          :icon="item.icon"
+          :value="item.calcu == 1 ? item.count : 0"
+          :title="item.name"
+        />
+      </template>
+      <template v-for="child in item.children">
+        <sidebar-item
+          v-if="!child.hidden"
+          :key="child.id"
+          :is-nest="true"
+          :item="child"
+          :base-path="resolvePath(child)"
+          class="nest-menu"
+        />
+      </template>
+    </el-submenu>
+  </div>
 </template>
 
 <script>
