@@ -21,30 +21,14 @@
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip> -->
       </template>
-
-      <!-- <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
-        <div class="avatar-wrapper">
-          <img :src="avatar + '?imageView2/1/w/80/h/80'" class="user-avatar" />
-          <i class="el-icon-caret-bottom" />
-        </div>
-        <el-dropdown-menu slot="dropdown">
-          <router-link to="/profile/index">
-            <el-dropdown-item>Profile</el-dropdown-item>
-          </router-link>
-          <router-link to="/">
-            <el-dropdown-item>Dashboard</el-dropdown-item>
-          </router-link>
-          <a target="_blank" href="https://github.com/PanJiaChen/vue-element-admin/">
-            <el-dropdown-item>Github</el-dropdown-item>
-          </a>
-          <a target="_blank" href="https://panjiachen.github.io/vue-element-admin-site/#/">
-            <el-dropdown-item>Docs</el-dropdown-item>
-          </a>
-          <el-dropdown-item divided @click.native="logout">
-            <span style="display: block">Log Out</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown> -->
+      <Info />
+      <News />
+      <!-- {{ userInfo.name }}
+      <span>
+        {{ userInfo.districtName || '上海市' }}
+        {{ userInfo.streetName && userInfo.streetName != '0' ? ' / ' + userInfo.streetName : '' }}
+        {{ userInfo.departmentName.length ? ' / ' + userInfo.departmentName[0] : '' }}
+      </span> -->
       <el-button
         type="text"
         icon="el-icon-setting"
@@ -65,6 +49,8 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Base/Breadcrumb'
 import Hamburger from '@/components/Base/Hamburger'
+import Info from './RightBar/Info'
+import News from './RightBar/News'
 // import ErrorLog from '@/components/ErrorLog'
 // import Screenfull from '@/components/Screenfull'
 // import SizeSelect from '@/components/SizeSelect'
@@ -73,14 +59,16 @@ import Hamburger from '@/components/Base/Hamburger'
 export default {
   components: {
     Breadcrumb,
-    Hamburger
+    Hamburger,
+    Info,
+    News
     // ErrorLog,
     // Screenfull,
     // SizeSelect,
     // Search
   },
   computed: {
-    ...mapGetters(['sidebar', 'avatar', 'device'])
+    ...mapGetters(['sidebar', 'avatar', 'device', 'userInfo'])
   },
   methods: {
     toggleSideBar() {
@@ -127,7 +115,7 @@ export default {
 
   .right-menu {
     float: right;
-    height: 100%;
+    // height: 100%;
     line-height: 50px;
 
     &:focus {
@@ -175,6 +163,69 @@ export default {
         }
       }
     }
+  }
+}
+</style>
+
+<style lang="scss">
+.person_wrap {
+  padding: 0;
+  .person_pabel {
+    width: 300px;
+    .person_avatar {
+      height: 110px;
+      border-radius: 4px 4px 0 0;
+      background-color: #5b5bd5;
+      .fl,
+      .fr {
+        height: 100%;
+      }
+      .fl {
+        width: 100px;
+        .person_avatar_img {
+          width: 70px;
+          height: 70px;
+          background-color: #ffffff;
+          border-radius: 50%;
+          margin: 20px auto;
+        }
+      }
+      .fr {
+        width: calc(100% - 100px);
+        padding: 15px 0;
+        line-height: 40px;
+        color: #ffffff;
+        .person_avatar_name {
+          font-size: 20px;
+          font-weight: bold;
+          padding-right: 10px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .person_avatar_identy {
+          padding-right: 10px;
+          font-size: 14px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+    .person_info {
+      // border: 1px solid #dee0e3;
+      // border-top: none;
+      .el-dropdown-menu__item {
+        font-size: 16px;
+        line-height: 50px;
+        &:last-child {
+          border-top: 1px solid #dee0e3;
+        }
+      }
+    }
+  }
+  .popper__arrow::after {
+    border-bottom-color: #5b5bd5 !important;
   }
 }
 </style>

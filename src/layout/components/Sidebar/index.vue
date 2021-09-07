@@ -40,7 +40,14 @@ export default {
     activeMenu() {
       const route = this.$route
       const { meta, path } = route
+      console.log(route, 'route')
       // if set path, the sidebar will highlight the path you set
+      if (route.name === 'case-detail-new') {
+        return route.query.type
+      }
+      if (route.params && route.params.id) {
+        return route.params.id
+      }
       if (meta.activeMenu) {
         return meta.activeMenu
       }

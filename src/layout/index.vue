@@ -59,7 +59,7 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('common/getAllCommonData')
+    this.$store.dispatch('user/getProcessCount')
   }
 }
 </script>

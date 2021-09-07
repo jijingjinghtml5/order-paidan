@@ -52,3 +52,26 @@ export function getAllEventTypes(params) {
     params
   })
 }
+
+export function getNewsCount(params) {
+  return request({
+    url: '/api_v3/app/notification-record/count',
+    method: 'get',
+    params
+  })
+}
+
+export function getNewsRecords(params) {
+  return request({
+    url: '/api_v3/app/notification-records',
+    method: 'get',
+    params
+  })
+}
+export function setNewsRead(data) {
+  return request({
+    url: '/api_v3/app/notification-record/switch',
+    method: 'post',
+    data
+  })
+}

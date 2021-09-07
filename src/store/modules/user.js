@@ -1,5 +1,12 @@
 import { login, logout, loginByToken, getCaseCount } from '@/api/login'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import {
+  getToken,
+  setToken,
+  removeToken,
+  getUserInfo,
+  setUserInfo,
+  removeUserInfo
+} from '@/utils/auth'
 import { resetRouter } from '@/router'
 
 const getDefaultState = () => {
@@ -9,7 +16,8 @@ const getDefaultState = () => {
     avatar: '',
     roles: [],
     rights: [],
-    menus: []
+    menus: [],
+    userInfo: getUserInfo()
   }
 }
 
@@ -30,6 +38,9 @@ const mutations = {
   },
   SET_TOKEN: (state, token) => {
     state.token = token
+  },
+  SET_USERINFO: (state, userInfo) => {
+    state.userInfo = userInfo
   },
   SET_NAME: (state, name) => {
     state.name = name
@@ -58,6 +69,8 @@ const actions = {
           const { data } = response.response
           commit('SET_TOKEN', data.token)
           setToken(data.token)
+          commit('SET_USERINFO', data.userInfo)
+          setUserInfo(data.userInfo)
           resolve()
         })
         .catch((error) => {
@@ -94,6 +107,7 @@ const actions = {
       logout(state.token)
         .then(() => {
           removeToken() // must remove  token  first
+          removeUserInfo()
           resetRouter()
           commit('RESET_STATE')
           resolve()
